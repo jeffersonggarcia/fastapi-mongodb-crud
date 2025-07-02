@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from models import UserModel, UserUpdateModel, UserResponse
 from crud import create_user, get_users, get_user, update_user, delete_user, search_users
 from typing import List
+from database import connect_to_mongo, close_mongo_connection  # importe as funções
 
 app = FastAPI(
     title="API CRUD de Usuários",
@@ -20,6 +21,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup_db_client():
+    await connect_to_mongo()
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    await close_mongo_connection()
 
 @app.get("/", tags=["Root"])
 async def root():
