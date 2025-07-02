@@ -1,32 +1,23 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from .config import settings
+from config import settings
 import logging
 
-class Database:
-    client: AsyncIOMotorClient = None
-    
-db_instance = Database()
+# Cria o cliente MongoDB (Motor)
+client = AsyncIOMotorClient(settings.MONGO_URL)
 
-async def get_database() -> AsyncIOMotorClient:
-    return db_instance.client
+# Seleciona o banco de dados
+db = client[settings.DATABASE_NAME]
 
 async def connect_to_mongo():
-    """Conectar ao MongoDB"""
+    """Verifica a conexão com MongoDB"""
     try:
-        db_instance.client = AsyncIOMotorClient(settings.MONGO_URL)
-        # Testar a conexão
-        await db_instance.client.admin.command('ping')
+        await client.admin.command('ping')
         logging.info("Conectado ao MongoDB com sucesso!")
     except Exception as e:
         logging.error(f"Erro ao conectar ao MongoDB: {e}")
         raise
 
 async def close_mongo_connection():
-    """Fechar conexão com MongoDB"""
-    if db_instance.client:
-        db_instance.client.close()
-        logging.info("Conexão com MongoDB fechada")
-
-# Para compatibilidade com o código existente
-client = AsyncIOMotorClient(settings.MONGO_URL)
-db = client[settings.DATABASE_NAME]
+    """Fecha a conexão MongoDB"""
+    client.close()
+    logging.info("Conexão com MongoDB fechada")

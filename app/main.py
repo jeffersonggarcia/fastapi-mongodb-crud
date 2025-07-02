@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from .models import UserModel, UserUpdateModel, UserResponse
-from .crud import create_user, get_users, get_user, update_user, delete_user, search_users
+from models import UserModel, UserUpdateModel, UserResponse
+from crud import create_user, get_users, get_user, update_user, delete_user, search_users
 from typing import List
 
 app = FastAPI(

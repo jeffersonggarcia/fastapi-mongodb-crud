@@ -1,0 +1,39 @@
+# Multi-stage build para otimizar o tamanho da imagem final
+FROM python:3.10-slim as builder
+
+# Instalar dependências de build
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    libc6-dev \
+    make \
+    pkg-config \
+    rustc \
+    cargo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Criar e ativar ambiente virtual
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Instalar dependências Python
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Imagem final (mais leve)
+FROM python:3.10-slim
+
+# Copiar o ambiente virtual da imagem builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Definir diretório de trabalho
+WORKDIR /app
+
+# Copiar código da aplicação
+COPY ./app /app
+
+# Comando para iniciar o servidor
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

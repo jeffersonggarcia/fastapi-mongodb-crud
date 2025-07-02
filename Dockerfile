@@ -1,15 +1,25 @@
-# Usando a imagem oficial do Python 3.13.5
-FROM python:3.13.5-slim
+FROM python:3.10-slim
 
-# Definindo o diretório de trabalho
 WORKDIR /app
 
-# Copiando o arquivo de requisitos e instalando as dependências
+# Instala dependências do sistema (build tools e Rust para algumas libs)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    g++ \
+    libc6-dev \
+    make \
+    pkg-config \
+    rustc \
+    cargo \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copiar requirements e instalar dependências Python
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiando o código da aplicação para o diretório de trabalho
+# Copiar o diretório app
 COPY ./app /app
 
-# Comando para iniciar o servidor FastAPI com Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Rodar o uvicorn apontando para app.main:app
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
